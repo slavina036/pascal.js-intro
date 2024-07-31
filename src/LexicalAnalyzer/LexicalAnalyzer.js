@@ -41,23 +41,23 @@ export class LexicalAnalyzer
 
         this.currentWord = '';
 
-        if (/\d/.exec(this.char) !== null) {
+        if (/\d/.exec(this.char) !== null) {    // цифры
 
-            while (/[\d.]/.exec(this.char) !== null) {
+            while (/[\d.]/.exec(this.char) !== null) {      
                 this.currentWord += this.char;
                 this.char = this.fileIO.nextCh();
             }
 
             return new IntegerConstant(SymbolsCodes.integerConst, this.currentWord);
 
-        } else if (/\w/i.exec(this.char) !== null) {
+        } else if (/\w/i.exec(this.char) !== null) {  //
 
             while (/\w/i.exec(this.char) !== null) {
                 this.currentWord += this.char;
                 this.char = this.fileIO.nextCh();
             }
 
-            return this.getSymbol(SymbolsCodes.identifier);
+            return this.getSymbol(SymbolsCodes.identifier,this.currentWord);
 
         } else if (/\n/.exec(this.char) !== null) {
             this.char = this.fileIO.nextCh();
@@ -83,7 +83,15 @@ export class LexicalAnalyzer
 
                 case '=':
                     this.char = this.fileIO.nextCh();
-                    return this.getSymbol(SymbolsCodes.equal);
+                    return this.getSymbol(SymbolsCodes.equals);
+
+                case '(':
+                    this.char = this.fileIO.nextCh();
+                    return this.getSymbol(SymbolsCodes.leftPar);
+                    
+                case ')':
+                    this.char = this.fileIO.nextCh();
+                    return this.getSymbol(SymbolsCodes.rightPar);    
 
             }
         }

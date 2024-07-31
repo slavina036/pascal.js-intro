@@ -4,6 +4,10 @@ import { Addition } from './Tree/Addition';
 import { Subtraction } from './Tree/Subtraction';
 import { NumberConstant } from './Tree/NumberConstant';
 import { SymbolsCodes } from '../LexicalAnalyzer/SymbolsCodes';
+import { UnaryMinus } from './Tree/UnaryMinus';
+import { Variable } from './Tree/Variable';
+import { Engine } from '../Semantics/Engine';
+import { Assignment } from './Tree/Assignment';
 
 /**
  * Синтаксический анализатор - отвечат за построения дерева выполнения
@@ -14,21 +18,23 @@ export class SyntaxAnalyzer
     {
         this.lexicalAnalyzer = lexicalAnalyzer;
         this.symbol = null;
+        this.previousSymbol = null;
         this.tree = null;
-        this.trees = [];
+        this.trees = [];    
     }
 
     nextSym()
     {
+        this.previousSymbol = this.symbol;
         this.symbol = this.lexicalAnalyzer.nextSym();
     }
 
     accept(expectedSymbolCode)
     {
         if (this.symbol.symbolCode === expectedSymbolCode) {
-            this.nextSym();
+                this.nextSym();
         } else {
-            throw `${expectedSymbolCode} expected but ${this.symbol.symbolCode} found!`;
+            throw `"${expectedSymbolCode}" expected but "${this.symbol.symbolCode}" found!`;
         }
     }
 
@@ -55,10 +61,10 @@ export class SyntaxAnalyzer
         let term = this.scanTerm();
         let operationSymbol = null;
 
-        while ( this.symbol !== null && (
-                    this.symbol.symbolCode === SymbolsCodes.plus ||
-                    this.symbol.symbolCode === SymbolsCodes.minus
-            )) {
+        while (this.symbol !== null && (
+            this.symbol.symbolCode === SymbolsCodes.plus ||
+            this.symbol.symbolCode === SymbolsCodes.minus
+        )) {
 
             operationSymbol = this.symbol;
             this.nextSym();
@@ -69,7 +75,7 @@ export class SyntaxAnalyzer
                     break;
                 case SymbolsCodes.minus:
                     term = new Subtraction(operationSymbol, term, this.scanTerm());
-                    break;
+                    break;  
             }
         }
 
@@ -83,7 +89,8 @@ export class SyntaxAnalyzer
 
         while ( this.symbol !== null && (
                     this.symbol.symbolCode === SymbolsCodes.star ||
-                    this.symbol.symbolCode === SymbolsCodes.slash
+                    this.symbol.symbolCode === SymbolsCodes.slash ||
+                    this.symbol.symbolCode === SymbolsCodes.equals
             )) {
 
             operationSymbol = this.symbol;
@@ -96,18 +103,91 @@ export class SyntaxAnalyzer
                 case SymbolsCodes.slash:
                     term = new Division(operationSymbol, term, this.scanMultiplier());
                     break;
+                case SymbolsCodes.equals:
+                    term = new Assignment(operationSymbol, term, this.scanExpression());
+                    break;
             }
         }
 
         return term;
     }
+
     // Разбор множителя
     scanMultiplier()
     {
-        let integerConstant = this.symbol;
+         if (this.symbol.symbolCode === SymbolsCodes.minus 
+            // && (this. previousSymbol === null || this. previousSymbol.symbolCode === SymbolsCodes.leftPar)
+            ) {
+            let sym = this.symbol;
+            this.nextSym();
+            return new UnaryMinus(sym, this.scanMultiplier());
+         } else if (this.symbol.symbolCode === SymbolsCodes.leftPar) {
+            this.nextSym();
+            // if (this.symbol.symbolCode === SymbolsCodes.minus) {
+            //     let sym = this.symbol;
+            //     this.nextSym();
+            //     let multiplier = new UnaryMinus(sym, this.scanMultiplier());
+            //     this.accept(SymbolsCodes.rightPar);
+            //     return multiplier;
+            // } else {
+                let expression = this.scanExpression();
+                this.accept(SymbolsCodes.rightPar);
+                return expression;
+            // }
 
-        this.accept(SymbolsCodes.integerConst);
+        } else if (this.symbol.symbolCode === SymbolsCodes.identifier) {   // переменная
 
-        return new NumberConstant(integerConstant);
-    }
+            let identifier = this.symbol;           
+            this.accept(SymbolsCodes.identifier);
+            return new Variable(identifier);
+            
+        } else if (this.symbol.symbolCode === SymbolsCodes.equals) { // =
+
+            this.nextSym();
+            let expression = this.scanExpression();
+            return expression;
+
+        } else {
+            let integerConstant = this.symbol;
+
+            this.accept(SymbolsCodes.integerConst);
+
+            return new NumberConstant(integerConstant);
+        }
+
+    };
+
 };
+
+    // // Разбор множителя
+    // scanMultiplier()
+    // {
+    //      if (this.symbol.symbolCode === SymbolsCodes.minus &&
+    //         (this. previousSymbol === null || this. previousSymbol.symbolCode === SymbolsCodes.leftPar)) {
+    //         let sym = this.symbol;
+    //         this.nextSym();
+    //         return new UnaryMinus(sym, this.scanMultiplier());
+    //      } else if (this.symbol.symbolCode === SymbolsCodes.leftPar) {
+    //         this.nextSym();
+    //         // if (this.symbol.symbolCode === SymbolsCodes.minus) {
+    //         //     let sym = this.symbol;
+    //         //     this.nextSym();
+    //         //     let multiplier = new UnaryMinus(sym, this.scanMultiplier());
+    //         //     this.accept(SymbolsCodes.rightPar);
+    //         //     return multiplier;
+    //         // } else {
+    //             let expression = this.scanExpression();
+    //             this.accept(SymbolsCodes.rightPar);
+    //             return expression;
+    //         // }
+    
+    //     } else {
+    //         let integerConstant = this.symbol;
+
+    //         this.accept(SymbolsCodes.integerConst);
+
+    //         return new NumberConstant(integerConstant);
+    //     }
+
+
+    // }

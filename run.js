@@ -5,18 +5,18 @@ import { Engine } from './src/Semantics/Engine';
 
 let fileIO = new FileIO('example.code');
 
-//for (let i = 1; i <= 34; i++ ) {
+// for (let i = 1; i <= 34; i++ ) {
 //    let currentChar = fileIO.nextCh();
 //    console.log(i, ') ', currentChar);
-//}
+// }
 
 let lexicalAnalyzer = new LexicalAnalyzer(fileIO);
 
 
-//for (let i = 1; i <= 10; i++ ) {
+// for (let i = 1; i <= 20; i++ ) {
 //    let currentSym = lexicalAnalyzer.nextSym();
 //    console.log(i, ') ', currentSym);
-//}
+// }
 
 
 let syntaxAnalyzer = new SyntaxAnalyzer(lexicalAnalyzer);
