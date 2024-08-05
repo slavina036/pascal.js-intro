@@ -50,9 +50,9 @@ export class LexicalAnalyzer
 
             return new IntegerConstant(SymbolsCodes.integerConst, this.currentWord);
 
-        } else if (/\w/i.exec(this.char) !== null) {  //
+        } else if (/\w/i.exec(this.char) !== null) {  // буквы  
 
-            while (/\w/i.exec(this.char) !== null) {
+            while (this.char !== null && /\w/i.exec(this.char) !== null) {
                 this.currentWord += this.char;
                 this.char = this.fileIO.nextCh();
             }

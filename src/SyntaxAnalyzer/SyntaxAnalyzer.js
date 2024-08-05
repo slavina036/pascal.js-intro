@@ -98,13 +98,17 @@ export class SyntaxAnalyzer
 
             switch (operationSymbol.symbolCode) {
                 case SymbolsCodes.star:
-                    term = new Multiplication(operationSymbol, term, this.scanMultiplier());
+                    term = new Multiplication(operationSymbol, term, this.scanTerm());
                     break;
                 case SymbolsCodes.slash:
-                    term = new Division(operationSymbol, term, this.scanMultiplier());
+                    term = new Division(operationSymbol, term, this.scanTerm());
                     break;
                 case SymbolsCodes.equals:
+                    if (term.symbol.symbolCode !== SymbolsCodes.identifier) {
+                        throw `"Impossible variable name"`;
+                    }
                     term = new Assignment(operationSymbol, term, this.scanExpression());
+
                     break;
             }
         }
@@ -115,37 +119,21 @@ export class SyntaxAnalyzer
     // Разбор множителя
     scanMultiplier()
     {
-         if (this.symbol.symbolCode === SymbolsCodes.minus 
-            // && (this. previousSymbol === null || this. previousSymbol.symbolCode === SymbolsCodes.leftPar)
-            ) {
+         if (this.symbol.symbolCode === SymbolsCodes.minus ) {
             let sym = this.symbol;
             this.nextSym();
             return new UnaryMinus(sym, this.scanMultiplier());
+
          } else if (this.symbol.symbolCode === SymbolsCodes.leftPar) {
             this.nextSym();
-            // if (this.symbol.symbolCode === SymbolsCodes.minus) {
-            //     let sym = this.symbol;
-            //     this.nextSym();
-            //     let multiplier = new UnaryMinus(sym, this.scanMultiplier());
-            //     this.accept(SymbolsCodes.rightPar);
-            //     return multiplier;
-            // } else {
-                let expression = this.scanExpression();
-                this.accept(SymbolsCodes.rightPar);
-                return expression;
-            // }
+            let expression = this.scanExpression();
+            this.accept(SymbolsCodes.rightPar);
+            return expression;
 
         } else if (this.symbol.symbolCode === SymbolsCodes.identifier) {   // переменная
-
             let identifier = this.symbol;           
             this.accept(SymbolsCodes.identifier);
             return new Variable(identifier);
-            
-        } else if (this.symbol.symbolCode === SymbolsCodes.equals) { // =
-
-            this.nextSym();
-            let expression = this.scanExpression();
-            return expression;
 
         } else {
             let integerConstant = this.symbol;
@@ -158,36 +146,3 @@ export class SyntaxAnalyzer
     };
 
 };
-
-    // // Разбор множителя
-    // scanMultiplier()
-    // {
-    //      if (this.symbol.symbolCode === SymbolsCodes.minus &&
-    //         (this. previousSymbol === null || this. previousSymbol.symbolCode === SymbolsCodes.leftPar)) {
-    //         let sym = this.symbol;
-    //         this.nextSym();
-    //         return new UnaryMinus(sym, this.scanMultiplier());
-    //      } else if (this.symbol.symbolCode === SymbolsCodes.leftPar) {
-    //         this.nextSym();
-    //         // if (this.symbol.symbolCode === SymbolsCodes.minus) {
-    //         //     let sym = this.symbol;
-    //         //     this.nextSym();
-    //         //     let multiplier = new UnaryMinus(sym, this.scanMultiplier());
-    //         //     this.accept(SymbolsCodes.rightPar);
-    //         //     return multiplier;
-    //         // } else {
-    //             let expression = this.scanExpression();
-    //             this.accept(SymbolsCodes.rightPar);
-    //             return expression;
-    //         // }
-    
-    //     } else {
-    //         let integerConstant = this.symbol;
-
-    //         this.accept(SymbolsCodes.integerConst);
-
-    //         return new NumberConstant(integerConstant);
-    //     }
-
-
-    // }
