@@ -63,7 +63,8 @@ export class SyntaxAnalyzer
 
         while (this.symbol !== null && (
             this.symbol.symbolCode === SymbolsCodes.plus ||
-            this.symbol.symbolCode === SymbolsCodes.minus
+            this.symbol.symbolCode === SymbolsCodes.minus ||
+            (this.symbol.symbolCode === SymbolsCodes.equals && term.symbol.symbolCode === SymbolsCodes.identifier)
         )) {
 
             operationSymbol = this.symbol;
@@ -76,6 +77,8 @@ export class SyntaxAnalyzer
                 case SymbolsCodes.minus:
                     term = new Subtraction(operationSymbol, term, this.scanTerm());
                     break;  
+                case SymbolsCodes.equals:
+                    term = new Assignment(operationSymbol, term, this.scanExpression());
             }
         }
 
@@ -89,9 +92,8 @@ export class SyntaxAnalyzer
 
         while ( this.symbol !== null && (
                     this.symbol.symbolCode === SymbolsCodes.star ||
-                    this.symbol.symbolCode === SymbolsCodes.slash ||
-                    this.symbol.symbolCode === SymbolsCodes.equals
-            )) {
+                    this.symbol.symbolCode === SymbolsCodes.slash 
+        )) {
 
             operationSymbol = this.symbol;
             this.nextSym();
@@ -102,13 +104,6 @@ export class SyntaxAnalyzer
                     break;
                 case SymbolsCodes.slash:
                     term = new Division(operationSymbol, term, this.scanTerm());
-                    break;
-                case SymbolsCodes.equals:
-                    if (term.symbol.symbolCode !== SymbolsCodes.identifier) {
-                        throw `"Impossible variable name"`;
-                    }
-                    term = new Assignment(operationSymbol, term, this.scanExpression());
-
                     break;
             }
         }
