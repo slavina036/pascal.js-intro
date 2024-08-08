@@ -100,10 +100,10 @@ export class SyntaxAnalyzer
 
             switch (operationSymbol.symbolCode) {
                 case SymbolsCodes.star:
-                    term = new Multiplication(operationSymbol, term, this.scanTerm());
+                    term = new Multiplication(operationSymbol, term, this.scanMultiplier());
                     break;
                 case SymbolsCodes.slash:
-                    term = new Division(operationSymbol, term, this.scanTerm());
+                    term = new Division(operationSymbol, term, this.scanMultiplier());
                     break;
             }
         }
